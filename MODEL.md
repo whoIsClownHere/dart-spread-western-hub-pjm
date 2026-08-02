@@ -28,7 +28,7 @@ Same feature columns as training (`load_forecast`, `hour_of_day`, `day_of_week`,
 
 1. **Assemble** — join `dart` (training only) and `load_forecast` on `interval_start_utc` for the zone.
 2. **Derive calendar features** — extract hour-of-day, day-of-week, month from `interval_start_utc`; one-hot encode all three.
-3. **Split (walk-forward)** — expanding training window, retrained daily: each simulated "day" trains on all history strictly before that day's DA close, then predicts that day's 24 hours. Never a random split.
+3. **Split (walk-forward)** — expanding training window, retrained daily: each simulated "day" trains on all history strictly before that day's DA close, then predicts that day's 24 hours. Never a random split. Observation period is `2019-01-01`–`2025-12-31` (see [SPEC.md](SPEC.md#key-decisions)); the first scored prediction is `2020-01-01`, with all of `2019` used as warm-up training history only. `2026-01-01` onward is a final holdout, untouched until the end of the project.
 4. **Fit** — two independent candidate models trained on the same feature set and target: a linear model (Ridge/Lasso) and a gradient-boosted model (LightGBM). Same one-hot feature representation for both, for a fair comparison.
 5. **Predict** — each fitted model outputs one DART value per (zone, hour) row in the held-out day.
 6. **Score** — for that backtest day, compute error for both candidate models and both baselines (persistence, seasonal-naive) against the now-known actual `dart`.
@@ -42,6 +42,5 @@ Aggregated over a backtest period, the output is a table of MAE/RMSE per model (
 
 ## Not Yet Decided
 
-- **Minimum training history** before the first walk-forward prediction is made (e.g. first N days held out purely as warm-up).
 - **Feature scaling for the linear model** — one-hot columns don't need it, but whether `load_forecast` is standardized before fitting Ridge/Lasso isn't decided.
 - **Missing/incomplete hours** — what happens to a row if `load_forecast` has no vintage published before that day's DA close (e.g. very start of history), or DA/RT LMP is missing for an hour.

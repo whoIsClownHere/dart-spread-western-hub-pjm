@@ -11,6 +11,11 @@ client = GridStatusClient(api_key=GRIDSTATUS_API_KEY)
 
 ZONE = "DOM"  # PJM Dominion zone
 
+TRAIN_START = "2019-01-01"
+TRAIN_END = "2026-01-01"  # exclusive: covers 2019-01-01 through 2025-12-31
+WARMUP_END = "2020-01-01"  # exclusive: all of 2019 is warm-up-only training history
+HOLDOUT_START = "2026-01-01"  # final holdout, untouched until the end of the project
+
 
 def get_dart_data(zone: str, start: str, end: str) -> pd.DataFrame:
     """DART = day-ahead LMP minus real-time LMP, hourly, for one PJM zone.
@@ -37,8 +42,12 @@ def get_dart_data(zone: str, start: str, end: str) -> pd.DataFrame:
     out = pd.DataFrame({
         "da_lmp": da["lmp"],
         "rt_lmp": rt["lmp"],
+        "da_energy": da["energy"],
+        "rt_energy": rt["energy"],
         "da_congestion": da["congestion"],
         "rt_congestion": rt["congestion"],
+        "da_loss": da["loss"],
+        "rt_loss": rt["loss"],
     })
     out["dart"] = out["da_lmp"] - out["rt_lmp"]
     return out
@@ -74,9 +83,12 @@ def get_load_forecast_data(
     return latest["load_forecast"]
 
 
-if __name__ == "__main__":
-    df = get_dart_data(ZONE, "2025-07-01", "2025-07-07")
-    print(df)
+def save_data(zone: str, start: str, end: str, path: str) -> None:
+    """Fetch DART and load-forecast data for one zone and save the joined result to CSV."""
+    dart = get_dart_data(zone, start, end)
+    load_forecast = get_load_forecast_data(zone, start, end)
+    dart.join(load_forecast).to_csv(path)
 
-    load_forecast = get_load_forecast_data(ZONE, "2025-07-01", "2025-07-07")
-    print(load_forecast)
+
+if __name__ == "__main__":
+    save_data(ZONE, TRAIN_START, TRAIN_END, "dart_data.csv")
