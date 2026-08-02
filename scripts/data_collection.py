@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -8,6 +9,9 @@ load_dotenv()
 
 GRIDSTATUS_API_KEY = os.environ["GRIDSTATUS_API_KEY"]
 client = GridStatusClient(api_key=GRIDSTATUS_API_KEY)
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+INPUT_DATA_DIR = ROOT_DIR / "input_data"
 
 ZONE = "DOM"  # PJM Dominion zone
 
@@ -91,4 +95,4 @@ def save_data(zone: str, start: str, end: str, path: str) -> None:
 
 
 if __name__ == "__main__":
-    save_data(ZONE, TRAIN_START, TRAIN_END, "dart_data.csv")
+    save_data(ZONE, TRAIN_START, TRAIN_END, INPUT_DATA_DIR / "dart_data.csv")

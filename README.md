@@ -21,8 +21,8 @@ Northern Virginia's data-center load growth has been driving real, well-document
 
 This project is in progress and will be updated as it grows. Current state:
 
-- [x] Data collection: pull hourly day-ahead and real-time LMPs for the Dominion zone and compute DART (`data_collection.py`)
-- [x] Leak-free feature pull (PJM's `pjm_load_forecast_hourly_historical` dataset, so features only use information that would have actually been available before the day-ahead market closed) (`data_collection.py`)
+- [x] Data collection: pull hourly day-ahead and real-time LMPs for the Dominion zone and compute DART (`scripts/data_collection.py`)
+- [x] Leak-free feature pull (PJM's `pjm_load_forecast_hourly_historical` dataset, so features only use information that would have actually been available before the day-ahead market closed) (`scripts/data_collection.py`)
 - [ ] Calendar/seasonal features
 - [ ] Baselines: persistence and seasonal-naive
 - [ ] Two models trained on load-forecast + calendar features: a linear model (Ridge/Lasso) and a gradient-boosted model (LightGBM)
@@ -50,7 +50,7 @@ GRIDSTATUS_API_KEY=your_key_here
 Then run:
 
 ```bash
-python data_collection.py
+python scripts/data_collection.py
 ```
 
 ## Roadmap (v2 ideas)
