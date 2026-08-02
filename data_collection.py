@@ -44,6 +44,39 @@ def get_dart_data(zone: str, start: str, end: str) -> pd.DataFrame:
     return out
 
 
+def get_load_forecast_data(
+    zone: str, start: str, end: str, da_close_hour_et: int = 12
+) -> pd.Series:
+    """Leak-free hourly load forecast for one PJM zone.
+
+    `pjm_load_forecast_hourly_historical` carries multiple forecast vintages
+    per hour (`publish_time_utc`), since PJM reissues the forecast every six
+    hours. For each target hour we keep only vintages published before that
+    operating day's DA market close (~noon ET, per SPEC.md — not verified)
+    and take the most recent of those, so the feature reflects only what was
+    actually knowable before DA close.
+    """
+    raw = client.get_dataset(
+        dataset="pjm_load_forecast_hourly_historical",
+        start=start, end=end,
+        columns=["interval_start_utc", "publish_time_utc", zone.lower()],
+    )
+    raw = raw.rename(columns={zone.lower(): "load_forecast"})
+
+    interval_et = raw["interval_start_utc"].dt.tz_convert("US/Eastern")
+    operating_day = interval_et.dt.normalize()
+    da_close = operating_day - pd.Timedelta(days=1) + pd.Timedelta(hours=da_close_hour_et)
+
+    raw = raw[raw["publish_time_utc"] <= da_close]
+    raw = raw.sort_values("publish_time_utc")
+    latest = raw.groupby("interval_start_utc").last()
+
+    return latest["load_forecast"]
+
+
 if __name__ == "__main__":
     df = get_dart_data(ZONE, "2025-07-01", "2025-07-07")
     print(df)
+
+    load_forecast = get_load_forecast_data(ZONE, "2025-07-01", "2025-07-07")
+    print(load_forecast)

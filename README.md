@@ -22,12 +22,12 @@ Northern Virginia's data-center load growth has been driving real, well-document
 This project is in progress and will be updated as it grows. Current state:
 
 - [x] Data collection: pull hourly day-ahead and real-time LMPs for the Dominion zone and compute DART (`data_collection.py`)
-- [ ] Leak-free feature pull (PJM's `pjm_load_forecast_hourly_historical` dataset, so features only use information that would have actually been available before the day-ahead market closed)
+- [x] Leak-free feature pull (PJM's `pjm_load_forecast_hourly_historical` dataset, so features only use information that would have actually been available before the day-ahead market closed) (`data_collection.py`)
 - [ ] Calendar/seasonal features
 - [ ] Baselines: persistence and seasonal-naive
-- [ ] A simple model (gradient boosting or linear) trained on load-forecast + calendar features
-- [ ] Walk-forward backtest (expanding time window — never a random train/test split on time series data) comparing the model against both baselines
-- [ ] Results and honest write-up of what worked and what didn't
+- [ ] Two models trained on load-forecast + calendar features: a linear model (Ridge/Lasso) and a gradient-boosted model (LightGBM)
+- [ ] Walk-forward backtest (expanding time window — never a random train/test split on time series data) scoring MAE/RMSE for both models against both baselines
+- [ ] Results and honest write-up of what worked and what didn't (repo README + a short blog-style post)
 
 ## A deliberate constraint: no look-ahead
 
